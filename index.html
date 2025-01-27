@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificação Programada</title>
+</head>
+<body>
+    <h1>Notificação Programada</h1>
+    <label for="tempo">Escolha em quantos segundos deseja receber a notificação:</label>
+    <input type="number" id="tempo" min="1" placeholder="Segundos">
+    <button id="notifyButton">Agendar Notificação</button>
+
+    <script>
+        // Verifique se o navegador suporta notificações
+        if ('serviceWorker' in navigator && 'Notification' in window) {
+            // Registrar o Service Worker
+            navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+                console.log('Service Worker registrado com sucesso:', registration);
+            }).catch(function(error) {
+                console.log('Erro ao registrar o Service Worker:', error);
+            });
+
+            // Solicitar permissão para notificações
+            Notification.requestPermission().then(function(permission) {
+                if (permission === "granted") {
+                    console.log("Permissão para notificações concedida!");
+                } else {
+                    console.log("Permissão para notificações negada.");
+                }
+            });
+
+            // Lidar com o clique no botão para agendar a notificação
+            document.getElementById('notifyButton').addEventListener('click', function() {
+                const tempo = parseInt(document.getElementById('tempo').value);
+                if (!isNaN(tempo) && tempo > 0) {
+                    // Agendar a notificação após o tempo inserido
+                    setTimeout(function() {
+                        enviarNotificacao('Alerta!', 'Essa é uma notificação programada após ' + tempo + ' segundos.');
+                    }, tempo * 1000); // tempo em segundos convertido para milissegundos
+                } else {
+                    alert("Por favor, insira um número válido de segundos.");
+                }
+            });
+
+            // Função para enviar uma notificação
+            function enviarNotificacao(titulo, corpo) {
+                if (Notification.permission === "granted") {
+                    navigator.serviceWorker.getRegistration().then(function(registration) {
+                        registration.showNotification(titulo, {
+                            body: corpo,
+                            icon: '/icon.png'
+                        });
+                    });
+                }
+            }
+        } else {
+            console.log("Este navegador não suporta notificações ou Service Worker.");
+        }
+    </script>
+</body>
+</html>
